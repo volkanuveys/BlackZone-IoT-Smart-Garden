@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BlackZone IoT</title>
+    
+    <link rel="icon" href="blaz.png" type="image/jpeg">
+    
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    
+    <style>
+        
+        body {
+            background-image: linear-gradient(rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.8)), url('sera.png');
+            background-size: cover;       
+            background-position: center;  
+            background-attachment: fixed; 
+            background-repeat: no-repeat;
+            color: #00FF00; 
+            font-family: 'Courier New', Courier, monospace;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+            text-align: center;
+            box-sizing: border-box;
+        }
+
+        h1 {
+            font-size: 4em;
+            margin-bottom: 10px;
+            text-shadow: 0 0 10px #00FF00;
+            line-height: 1.2;
+        }
+      
+        
+        .veri-kutusu {
+            border: 2px solid #00FF00;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            background-color: rgba(0,0,0,0.06);
+            box-shadow: 0 0 15px rgba(0, 255, 0, 0.2);
+            width: 100%;
+            max-width: 600px;
+        }
+        #nemDegeri { font-size: 5em; font-weight: bold; margin: 0; }
+        #durumMesaji { font-size: 1.5em; color: #ffffff; margin-top: 10px; }
+        #sonGuncelleme { font-size: 0.8em; color: #555; margin-top: 15px; }
+
+        
+        .kontrol-paneli {
+            margin-top: 20px;
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        .btn {
+            padding: 15px 30px;
+            font-size: 1em;
+            font-family: 'Courier New', Courier, monospace;
+            font-weight: bold;
+            border: 2px solid #555;
+            background-color: #000;
+            color: #fff;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .btn:active { transform: scale(0.95); } 
+
+        .btn-oto { 
+            border-color: #00FF00; 
+            color: #00FF00; 
+            box-shadow: 0 0 5px #00FF00; /* Hafif Neon */
+        }
+        .btn-oto:hover { 
+            background-color: #00FF00; 
+            color: #000; 
+            box-shadow: 0 0 20px #00FF00; /* Güçlü Neon */
+        }
+
+        /* Mavi Buton (Sula) */
+        .btn-ac { 
+            border-color: #00FFFF; 
+            color: #00FFFF; 
+            box-shadow: 0 0 5px #00FFFF; 
+        }
+        .btn-ac:hover { 
+            background-color: #00FFFF; 
+            color: #000; 
+            box-shadow: 0 0 20px #00FFFF; 
+        }
+
+        /* Kırmızı Buton (Durdur) */
+        .btn-kapat { 
+            border-color: #FF0000; 
+            color: #FF0000; 
+            box-shadow: 0 0 5px #FF0000; 
+        }
+        .btn-kapat:hover { 
+            background-color: #FF0000; 
+            color: #fff; 
+            box-shadow: 0 0 20px #FF0000; 
+        }
+
+        /* Logo Alanı */
+        .branding-container {
+            position: fixed; bottom: 20px; right: 20px;
+            display: flex; align-items: center; z-index: 1000;
+            background-color: rgba(0, 0, 0, 0.7); padding: 5px 10px; border-radius: 5px;
+        }
+        .powered-text { color: #00FF00; font-size: 14px; margin-right: 10px; text-transform: uppercase; }
+        .footer-logo { height: 80px; width: auto; }
+
+        /* Mobil Uyum */
+        @media screen and (max-width: 768px) {
+            h1 { font-size: 2em; }
+            #nemDegeri { font-size: 3em; }
+            .btn { width: 100%; margin-bottom: 10px; }
+            .footer-logo { height: 40px; }
+            .branding-container { bottom: 10px; right: 10px; }
+        }
+    </style>
+</head>
+
+<body>
+
+    <h1>BLACKZONE IoT</h1>
+
+    <div class="veri-kutusu">
+        <div id="nemDegeri">--</div>
+        <div id="durumMesaji">Sistem Bağlanıyor...</div>
+        <div id="sonGuncelleme">Son Veri: Bekleniyor</div>
+    </div>
+
+
+    <div class="kontrol-paneli">
+        <button class="btn btn-oto" onclick="emirVer('OTO')">OTOMATİK MOD</button>
+        <button class="btn btn-ac" onclick="emirVer('AC')">MANUEL SULA</button>
+        <button class="btn btn-kapat" onclick="emirVer('KAPAT')">MANUEL DURDUR</button>
+    </div>
+    
+    <p id="sonEmir" style="color: gray; font-size: 0.8em; margin-top: 15px;">Giden Komut: -</p>
+    
+<p style="font-size: 0.8em; color: #555;">EDITED BY VOLKAN GÜNÇAVDI</p>
+
+    <div class="branding-container">
+        <span class="powered-text">Powered by</span>
+        <img src="logo.png" alt="Blackzone Logo" class="footer-logo">
+    </div>
+
+    <script>
+        // 1. Veri Çekme Fonksiyonu
+        function veriCek() {
+            fetch('data.json?v=' + new Date().getTime(), { cache: "no-store" })
+            .then(response => {
+                if (!response.ok) throw new Error("Veri yok");
+                return response.json();
+            })
+            .then(data => {
+                document.getElementById("nemDegeri").innerText = "%" + data.yuzde; 
+                document.getElementById("durumMesaji").innerText = data.durum;
+                document.getElementById("sonGuncelleme").innerText = "Son Veri Saati: " + data.zaman;
+                
+                // Renk Değişimi
+                let durumKutusu = document.getElementById("durumMesaji");
+                if(data.durum.includes("Kuru")) durumKutusu.style.color = "#FF3333";
+                else if(data.durum.includes("Islak")) durumKutusu.style.color = "#3333FF";
+                else durumKutusu.style.color = "#00FF00";
+            })
+            .catch(error => console.log("Veri bekleniyor..."));
+        }
+
+        // 2. Emir Gönderme Fonksiyonu
+        function emirVer(komut) {
+            fetch('kontrol.php?mod=' + komut)
+            .then(response => response.text())
+            .then(sonuc => {
+                console.log(sonuc);
+                document.getElementById("sonEmir").innerText = "Giden Komut: " + komut;
+                alert("Komut Gönderildi: " + komut);
+            })
+            .catch(err => alert("Hata: " + err));
+        }
+
+        // Başlatma
+        veriCek();
+        setInterval(veriCek, 3000);
+    </script>
+
+</body>
+</html>
