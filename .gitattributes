@@ -1,2 +1,7 @@
-# Auto detect text files and perform LF normalization
-* text=auto
+# HTML, CSS ve JS dosyalarını istatistikten çıkar (Görmezden gel)
+*.html linguist-detectable=false
+*.css linguist-detectable=false
+*.js linguist-detectable=false
+
+# Arduino (.ino) dosyalarını C++ olarak say ve öne çıkar
+*.ino linguist-language=C++
